@@ -417,7 +417,8 @@ function refreshDOMArt(){
   const o=document.getElementById('artOver');
   if(o && o.dataset.expr){
     const u=artURL(o.dataset.expr);
-    if(u && u!==EMPTY_IMG) o.src=u; else o.removeAttribute('src');
+    if(u && u!==EMPTY_IMG){ o.src=u; o.classList.add('ready'); }
+    else { o.removeAttribute('src'); o.classList.remove('ready'); }
   }
   const lv=document.getElementById('artLevel');
   if(lv && lv.getAttribute('src')===EMPTY_IMG) lv.removeAttribute('src');
@@ -1114,7 +1115,10 @@ function gameOver(){
     .map(k=>WEAPONS[k].name+' LV'+G.player.weapons[k].lv).join(' · ');
   $('overEyebrow').textContent=win?'WELL FOUGHT':'SHADOWS WIN';
   $('overTitle').innerHTML=win?'잘<br>싸웠다':'별빛이<br>꺼졌다';
-  const o=$('artOver'); o.dataset.expr=win?'smile':'down'; o.src=artURL(o.dataset.expr);
+  const o=$('artOver'); o.dataset.expr=win?'smile':'down';
+  const ou=artURL(o.dataset.expr);
+  if(ou && ou!==EMPTY_IMG){ o.src=ou; o.classList.add('ready'); }
+  else { o.removeAttribute('src'); o.classList.remove('ready'); }
   $('hud').classList.remove('on');
   $('over').classList.add('on');
 }
