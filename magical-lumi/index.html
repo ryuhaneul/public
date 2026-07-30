@@ -55,7 +55,9 @@
         background:radial-gradient(ellipse at 50% 50%,transparent 45%,rgba(4,6,18,.75) 100%)}
   .kv{position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-start;padding:clamp(20px,5vw,64px)}
   .kv-art{position:absolute;right:-2%;bottom:0;height:100%;width:auto;z-index:1;
-          filter:drop-shadow(-14px 10px 34px rgba(0,0,0,.55));pointer-events:none;animation:float 6s ease-in-out infinite}
+          filter:drop-shadow(-14px 10px 34px rgba(0,0,0,.55));pointer-events:none;animation:float 6s ease-in-out infinite;
+          opacity:0;transition:opacity .25s ease}
+  .kv-art.ready{opacity:1}
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
   .kv-copy{position:relative;z-index:2;max-width:min(430px,62vw)}
   .eyebrow{display:inline-block;font-size:10px;letter-spacing:5px;color:var(--gold);
@@ -153,7 +155,8 @@
 
   @media (max-width:760px){
     .kv{align-items:flex-end;padding-bottom:26px}
-    .kv-art{right:50%;transform:translateX(50%);height:64%;opacity:.9;animation:none}
+    .kv-art{right:50%;transform:translateX(50%);height:64%;animation:none}
+    .kv-art.ready{opacity:.9}
     .kv-copy{max-width:100%;text-align:center}
     .btnrow{justify-content:center}
     .lede{margin-left:auto;margin-right:auto}
@@ -248,7 +251,7 @@
   <header><h3>에셋 슬롯</h3><button class="x" id="drawerClose" aria-label="닫기">×</button></header>
   <div class="dbody">
     <p class="dnote">칸을 누르거나 PNG를 창에 끌어다 놓으면 그 그림을 씁니다. 비운 칸은 내장 SVG 아트가 대신합니다.
-      투명 여백은 자동으로 잘라내니 크기는 맞추지 않아도 됩니다. 새로고침하면 초기화되며, 영구 적용은 파일 상단 <b>ASSETS</b> 값을 직접 채우면 됩니다.</p>
+      이 빌드는 커스텀 PNG 에셋 전용입니다. 투명 여백은 자동으로 잘라냅니다. 슬롯을 비우면 해당 그림이 사라집니다.</p>
 
     <div class="dsec">
       <h4>전신 일러스트</h4>
@@ -314,202 +317,9 @@ const ASSETS = {
 const TUNE = { sz:1, sy:0, fz:1, fx:0, fy:0 };
 
 /* ══════════════════════════════════════════════════════════
-   1. 기본 아트 — SVG 벡터 (에셋이 없을 때 사용)
+   1. 에셋 전용 (내장 SVG 캐릭터 제거 — 폴백 없음)
    ══════════════════════════════════════════════════════════ */
-const C = {
-  hairTop:'#f4e8ff', hairMid:'#dcc6f5', hairTip:'#ffbcd8', hairDark:'#b394de',
-  skin:'#ffe7da', skinSh:'#f5bfae', line:'#4a2f63',
-  irisIn:'#8ff2ea', irisMid:'#2ea9c9', irisOut:'#123a6b',
-  dress:'#fffaf2', navy:'#242e63', navy2:'#161d47',
-  gold:'#ffcf5c', gold2:'#d99a2d', pink:'#ff8fb1', pink2:'#e0567f'
-};
-const STAR='M 0 -34 L 9.6 -11.6 L 33.2 -10.5 L 15 4.4 L 21 27.2 L 0 14.5 L -21 27.2 L -15 4.4 L -33.2 -10.5 L -9.6 -11.6 Z';
-
-function eye(expr,mirror){
-  const t = mirror?'translate(312,264) scale(-0.92,0.92)':'translate(208,264) scale(0.92,0.92)';
-  if(expr==='smile') return `<g transform="${t}"><path d="M -26 4 C -18 -18 8 -20 24 -2" fill="none" stroke="${C.line}" stroke-width="6" stroke-linecap="round"/></g>`;
-  if(expr==='down') return `<g transform="${t}">
-      <path d="M -26 -8 C -18 8 8 10 24 -4" fill="none" stroke="${C.line}" stroke-width="5.5" stroke-linecap="round"/>
-      <path d="M -26 -8 C -22 -14 -16 -16 -10 -15" fill="none" stroke="${C.line}" stroke-width="3" stroke-linecap="round" opacity=".6"/></g>`;
-  const w = expr==='hurt'?0.86:1;
-  return `<g transform="${t}">
-    <clipPath id="ec${mirror?1:0}"><path d="M -28 0 C -27 -20 -10 -28 8 -25 C 21 -22 27 -11 28 0 C 28 13 16 22 0 23 C -16 24 -28 13 -28 0 Z"/></clipPath>
-    <path d="M -28 0 C -27 -20 -10 -28 8 -25 C 21 -22 27 -11 28 0 C 28 13 16 22 0 23 C -16 24 -28 13 -28 0 Z" fill="#fdfaff"/>
-    <g clip-path="url(#ec${mirror?1:0})">
-      <rect x="-30" y="-30" width="60" height="14" fill="#c9b6dd" opacity=".55"/>
-      <g transform="translate(-2,2) scale(${w})">
-        <circle r="17" fill="url(#iris)"/>
-        <ellipse cy="2" rx="7.2" ry="9.4" fill="#101a3a"/>
-        <circle cy="8" r="8.5" fill="${C.irisIn}" opacity=".55"/>
-        <path d="M -17 0 A 17 17 0 0 1 17 0 Z" fill="#0b2148" opacity=".45"/>
-        <circle r="17" fill="none" stroke="#0d2350" stroke-width="2.6"/>
-        <circle cx="-7.5" cy="-8" r="6.4" fill="#fff"/>
-        <circle cx="6" cy="7" r="3.1" fill="#fff" opacity=".9"/>
-        <circle cx="-11" cy="4" r="1.8" fill="#fff" opacity=".7"/>
-      </g>
-    </g>
-    <path d="M -31 -1 C -29 -24 -8 -34 10 -30 C 25 -27 30 -13 31 -2 C 27 -16 19 -24 8 -26 C -9 -30 -27 -19 -31 -1 Z" fill="${C.line}"/>
-    <path d="M -31 -1 L -41 -11 L -34 -12 Z" fill="${C.line}"/>
-    <path d="M -25 8 C -18 19 -4 24 10 21" fill="none" stroke="${C.line}" stroke-width="2.4" stroke-linecap="round" opacity=".55"/>
-  </g>`;
-}
-function mouth(expr){
-  if(expr==='smile') return `<path d="M 246 328 C 252 346 270 346 276 328 C 268 336 254 336 246 328 Z" fill="#a83f60"/>
-    <path d="M 250 334 C 256 342 266 342 272 334 Z" fill="#ff9fb5" opacity=".8"/>`;
-  if(expr==='hurt') return `<path d="M 247 332 C 251 326 255 338 259 331 C 263 324 267 337 272 330" fill="none" stroke="#b0546c" stroke-width="3" stroke-linecap="round"/>`;
-  if(expr==='down') return `<path d="M 250 336 C 256 328 266 328 271 336" fill="none" stroke="#b0546c" stroke-width="3" stroke-linecap="round"/>`;
-  return `<path d="M 249 329 C 255 340 266 340 271 329" fill="none" stroke="#b0546c" stroke-width="3.2" stroke-linecap="round"/>`;
-}
-function bow(x,y,s,rot){
-  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${s})">
-    <path d="M -4 6 C -12 34 -24 52 -40 66 L -20 62 L -10 34 Z" fill="${C.pink2}"/>
-    <path d="M 4 6 C 12 34 26 52 42 66 L 22 62 L 12 34 Z" fill="${C.pink2}"/>
-    <path d="M 0 0 C -10 -20 -38 -28 -48 -12 C -56 0 -48 18 -30 20 C -14 22 -4 12 0 0 Z" fill="${C.pink}"/>
-    <path d="M 0 0 C 10 -20 38 -28 48 -12 C 56 0 48 18 30 20 C 14 22 4 12 0 0 Z" fill="${C.pink}"/>
-    <path d="M 0 0 C -10 -20 -38 -28 -48 -12 C -34 -14 -14 -8 0 4 Z" fill="#fff" opacity=".3"/>
-    <circle r="9" fill="${C.gold}" stroke="${C.gold2}" stroke-width="2"/></g>`;
-}
-function hairBack(){ return `
-  <path d="M 260 112 C 166 112 118 180 124 270 C 128 340 116 410 100 486 C 92 526 84 566 76 604
-           L 110 552 L 118 636 L 152 562 L 168 650 L 202 574 L 216 658 L 250 582 L 264 662 L 298 580
-           L 314 656 L 348 570 L 362 648 L 396 558 L 410 632 L 444 596 C 436 566 428 526 420 486
-           C 404 410 392 340 396 270 C 402 180 354 112 260 112 Z" fill="url(#hair)"/>
-  <g fill="url(#hair)">
-    <path d="M 150 208 C 96 240 66 320 62 410 C 58 480 44 540 26 598 L 60 556 L 66 628 L 96 560
-             L 112 622 L 140 548 C 158 470 168 380 176 300 C 180 258 172 224 150 208 Z"/>
-    <g transform="translate(520,0) scale(-1,1)"><path d="M 150 208 C 96 240 66 320 62 410 C 58 480 44 540 26 598
-             L 60 556 L 66 628 L 96 560 L 112 622 L 140 548 C 158 470 168 380 176 300 C 180 258 172 224 150 208 Z"/></g>
-  </g>
-  <path d="M 150 208 C 130 250 122 330 120 400" fill="none" stroke="${C.hairDark}" stroke-width="5" opacity=".35" stroke-linecap="round"/>
-  <path d="M 370 208 C 390 250 398 330 400 400" fill="none" stroke="${C.hairDark}" stroke-width="5" opacity=".35" stroke-linecap="round"/>`;
-}
-function hairFrontLocks(){ return `
-  <path d="M 178 300 C 168 384 172 476 184 566 L 205 520 C 196 440 194 358 198 302 Z" fill="url(#hair)"/>
-  <path d="M 342 300 C 352 384 348 476 336 566 L 315 520 C 324 440 326 358 322 302 Z" fill="url(#hair)"/>
-  <path d="M 186 320 C 180 396 182 470 190 534" fill="none" stroke="#fff" stroke-width="3" opacity=".35" stroke-linecap="round"/>
-  <path d="M 334 320 C 340 396 338 470 330 534" fill="none" stroke="#fff" stroke-width="3" opacity=".35" stroke-linecap="round"/>`;
-}
-function headGroup(expr){
-  const b = expr==='hurt'?6:0;
-  return `
-  <path d="M 172 250 C 158 244 152 264 162 278 C 170 288 178 284 178 274 Z" fill="${C.skin}"/>
-  <path d="M 348 250 C 362 244 368 264 358 278 C 350 288 342 284 342 274 Z" fill="${C.skin}"/>
-  <path d="M 260 146 C 320 146 350 190 350 244 C 350 292 336 330 306 356 C 292 368 262 374 260 374
-           C 258 374 228 368 214 356 C 184 330 170 292 170 244 C 170 190 200 146 260 146 Z" fill="${C.skin}"/>
-  <path d="M 260 146 C 200 146 170 190 170 244 C 170 268 174 290 182 308 C 176 282 176 250 182 224
-           C 194 176 224 152 260 150 Z" fill="${C.skinSh}" opacity=".35"/>
-  <g opacity=".42"><ellipse cx="203" cy="300" rx="25" ry="10" fill="${C.pink}"/><ellipse cx="317" cy="300" rx="25" ry="10" fill="${C.pink}"/></g>
-  <g stroke="${C.pink2}" stroke-width="2" stroke-linecap="round" opacity=".4">
-    <path d="M 192 294 L 186 304"/><path d="M 203 293 L 197 303"/><path d="M 214 294 L 208 304"/>
-    <path d="M 306 294 L 312 304"/><path d="M 317 293 L 323 303"/><path d="M 328 294 L 334 304"/></g>
-  <path d="M 264 298 C 268 303 269 307 265 309" fill="none" stroke="${C.skinSh}" stroke-width="2.6" stroke-linecap="round"/>
-  ${mouth(expr)}${eye(expr,false)}${eye(expr,true)}
-  <path d="M 166 254 C 158 174 202 126 262 126 C 322 126 366 174 358 254
-           L 350 200 L 336 240 L 322 192 L 304 236 L 288 190 L 270 234 L 254 188 L 238 238
-           L 222 194 L 206 240 L 190 196 L 176 236 Z" fill="url(#hair)"/>
-  <path d="M 166 254 C 158 174 202 126 262 126 C 240 140 202 176 190 232 Z" fill="#fff" opacity=".22"/>
-  <path d="M 182 188 L 198 168 L 212 186 L 228 164 L 244 184 L 260 162 L 276 182 L 292 162 L 308 182
-           L 324 166 L 338 186 L 333 196 L 318 178 L 302 194 L 286 176 L 270 194 L 254 174 L 238 196
-           L 222 176 L 206 198 L 190 178 Z" fill="#fff" opacity=".45"/>
-  <path d="M 172 210 C 156 258 154 318 164 378 L 186 342 C 178 294 178 250 188 218 Z" fill="url(#hair)"/>
-  <path d="M 348 210 C 364 258 366 318 356 378 L 334 342 C 342 294 342 250 332 218 Z" fill="url(#hair)"/>
-  <path d="M 252 128 C 242 90 266 62 298 70 C 274 76 260 98 266 126 Z" fill="url(#hair)"/>
-  <path d="M 178 ${212+b} C 192 ${201+b} 216 ${201+b} 232 ${211+b}" fill="none" stroke="${C.hairDark}" stroke-width="6" stroke-linecap="round"/>
-  <path d="M 342 ${212+b} C 328 ${201+b} 304 ${201+b} 288 ${211+b}" fill="none" stroke="${C.hairDark}" stroke-width="6" stroke-linecap="round"/>
-  <g transform="translate(334,166) rotate(16) scale(0.42)" filter="url(#glow)"><path d="${STAR}" fill="${C.gold}" stroke="${C.gold2}" stroke-width="3"/></g>
-  ${bow(150,206,0.82,-14)}${bow(370,206,0.82,14)}
-  ${expr==='down'?`<ellipse cx="196" cy="292" rx="6" ry="11" fill="#9fe8ff" opacity=".8"/>`:''}`;
-}
-function bodyGroup(){ return `
-  <path d="M 230 340 L 230 400 C 242 414 278 414 290 400 L 290 340 Z" fill="${C.skin}"/>
-  <path d="M 230 340 L 290 340 L 290 364 C 268 382 246 378 230 362 Z" fill="${C.skinSh}" opacity=".55"/>
-  <path d="M 198 402 C 162 414 134 448 124 502 L 110 780 L 410 780 L 396 502 C 386 448 358 414 322 402 Z" fill="${C.dress}"/>
-  <path d="M 198 402 C 162 414 134 448 124 502 L 116 660 C 140 640 160 560 168 470 C 174 430 186 410 198 402 Z" fill="#e9dfd2" opacity=".5"/>
-  <path d="M 152 420 C 118 440 106 486 120 520 C 146 532 176 518 182 492 C 174 456 164 432 152 420 Z" fill="${C.dress}"/>
-  <path d="M 368 420 C 402 440 414 486 400 520 C 374 532 344 518 338 492 C 346 456 356 432 368 420 Z" fill="${C.dress}"/>
-  <path d="M 118 516 C 144 530 176 516 182 490 L 186 512 C 176 542 138 552 116 538 Z" fill="${C.navy}"/>
-  <path d="M 402 516 C 376 530 344 516 338 490 L 334 512 C 344 542 382 552 404 538 Z" fill="${C.navy}"/>
-  <path d="M 200 402 C 224 393 296 393 320 402 L 306 440 L 260 492 L 214 440 Z" fill="${C.navy}"/>
-  <path d="M 208 408 C 228 401 292 401 312 408" fill="none" stroke="${C.gold}" stroke-width="3.5"/>
-  <path d="M 216 434 L 260 484 L 304 434" fill="none" stroke="${C.gold}" stroke-width="3.5"/>
-  ${bow(260,470,0.9,0)}
-  <path d="M 116 664 L 404 664 L 410 780 L 110 780 Z" fill="${C.navy}"/>
-  <path d="M 116 664 L 404 664 L 405 686 L 115 686 Z" fill="${C.gold}" opacity=".85"/>
-  <g stroke="${C.navy2}" stroke-width="3" opacity=".55">
-    <path d="M 160 690 L 152 780"/><path d="M 208 690 L 204 780"/><path d="M 260 690 L 260 780"/>
-    <path d="M 312 690 L 316 780"/><path d="M 360 690 L 368 780"/></g>
-  <line x1="96" y1="778" x2="196" y2="404" stroke="${C.gold2}" stroke-width="13" stroke-linecap="round"/>
-  <line x1="94" y1="774" x2="194" y2="406" stroke="${C.gold}" stroke-width="6" stroke-linecap="round"/>
-  <g transform="translate(200,378) rotate(-8) scale(0.86)" filter="url(#glow)">
-    <path d="${STAR}" fill="${C.gold}" stroke="#fff6d8" stroke-width="3"/>
-    <path d="${STAR}" fill="#fff" opacity=".3" transform="scale(0.5)"/></g>
-  <ellipse cx="168" cy="480" rx="19" ry="23" transform="rotate(-16 168 480)" fill="${C.skin}"/>
-  <path d="M 154 470 C 162 464 176 466 182 474" fill="none" stroke="${C.skinSh}" stroke-width="2.5" stroke-linecap="round"/>`;
-}
-function defs(){ return `<defs>
-  <linearGradient id="hair" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="${C.hairTop}"/><stop offset="42%" stop-color="${C.hairMid}"/><stop offset="100%" stop-color="${C.hairTip}"/></linearGradient>
-  <radialGradient id="iris" cx="50%" cy="72%" r="72%">
-    <stop offset="0%" stop-color="${C.irisIn}"/><stop offset="46%" stop-color="${C.irisMid}"/><stop offset="100%" stop-color="${C.irisOut}"/></radialGradient>
-  <filter id="glow" x="-70%" y="-70%" width="240%" height="240%">
-    <feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-</defs>`; }
-function keyVisual(e){ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 780" width="520" height="780">${defs()}${hairBack()}${bodyGroup()}${hairFrontLocks()}${headGroup(e)}</svg>`; }
-function portraitSVG(e){ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="158 132 204 204" width="204" height="204">${defs()}<circle cx="260" cy="234" r="150" fill="#2c356f"/>${hairBack()}${headGroup(e)}</svg>`; }
-
-function chibi(expr){
-  const hurt=expr==='hurt';
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 160" width="256" height="320">
-  <defs>
-    <linearGradient id="h2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${C.hairTop}"/><stop offset="100%" stop-color="${C.hairTip}"/></linearGradient>
-    <radialGradient id="i2" cx="50%" cy="72%" r="72%"><stop offset="0%" stop-color="${C.irisIn}"/><stop offset="50%" stop-color="${C.irisMid}"/><stop offset="100%" stop-color="${C.irisOut}"/></radialGradient>
-  </defs>
-  <path d="M 64 6 C 28 6 16 32 20 62 C 22 84 16 104 8 122 L 22 110 L 26 132 L 40 112 L 46 134 L 58 114
-           L 64 136 L 70 114 L 82 134 L 88 112 L 102 132 L 106 110 L 120 122 C 112 104 106 84 108 62
-           C 112 32 100 6 64 6 Z" fill="url(#h2)"/>
-  <path d="M 26 34 C 8 46 2 76 6 104 L 16 92 L 20 112 L 30 90 C 32 70 34 48 34 38 Z" fill="url(#h2)"/>
-  <path d="M 102 34 C 120 46 126 76 122 104 L 112 92 L 108 112 L 98 90 C 96 70 94 48 94 38 Z" fill="url(#h2)"/>
-  <path d="M 52 116 h 8 v 16 h -8 z" fill="#3a3563"/><path d="M 68 116 h 8 v 16 h -8 z" fill="#3a3563"/>
-  <rect x="49" y="130" width="14" height="7" rx="3" fill="${C.pink2}"/><rect x="65" y="130" width="14" height="7" rx="3" fill="${C.pink2}"/>
-  <path d="M 50 92 L 78 92 L 92 122 C 78 128 50 128 36 122 Z" fill="${C.dress}"/>
-  <path d="M 36 122 C 50 128 78 128 92 122 L 94 130 C 78 136 50 136 34 130 Z" fill="${C.navy}"/>
-  <path d="M 52 78 h 24 v 16 h -24 z" fill="${C.dress}"/>
-  <path d="M 52 78 C 58 74 70 74 76 78 L 70 90 L 64 96 L 58 90 Z" fill="${C.navy}"/>
-  <circle cx="64" cy="90" r="5" fill="${C.pink}"/><circle cx="64" cy="90" r="2" fill="${C.gold}"/>
-  <rect x="76" y="80" width="7" height="13" rx="3.5" fill="${C.skin}"/>
-  <line x1="80" y1="92" x2="90" y2="62" stroke="${C.gold2}" stroke-width="3.6" stroke-linecap="round"/>
-  <g transform="translate(91,57) scale(0.2)"><path d="${STAR}" fill="${C.gold}" stroke="#fff3cf" stroke-width="6"/></g>
-  <circle cx="64" cy="52" r="35" fill="${C.skin}"/>
-  <ellipse cx="43" cy="64" rx="9" ry="4.5" fill="${C.pink}" opacity=".45"/><ellipse cx="85" cy="64" rx="9" ry="4.5" fill="${C.pink}" opacity=".45"/>
-  ${[[49,58,1],[79,58,-1]].map(([x,y,s])=>`
-  <g transform="translate(${x},${y}) scale(${s*0.94},0.94)">
-    <path d="M -11 0 C -10.5 -8 -4 -11.5 3 -10 C 8.5 -8.8 11 -4 11 0 C 11 5.5 6 9.5 0 9.8 C -6.5 10 -11 5.5 -11 0 Z" fill="#fdfaff"/>
-    <g transform="translate(-0.6,1) scale(${hurt?0.82:1})">
-      <circle r="7" fill="url(#i2)"/><ellipse ry="4" rx="3" fill="#101a3a"/>
-      <circle cx="-3" cy="-3" r="2.7" fill="#fff"/><circle cx="2.4" cy="3" r="1.3" fill="#fff" opacity=".9"/></g>
-    <path d="M -12 -0.5 C -11.5 -9.5 -4 -13.5 3.5 -12 C 10 -10.6 12 -5 12 -1 C 11 -6.5 7.5 -9.6 3 -10.6 C -4 -12 -11 -7.5 -12 -0.5 Z" fill="${C.line}"/>
-    <path d="M -12 -0.5 L -16 -5 L -13.5 -5.6 Z" fill="${C.line}"/></g>`).join('')}
-  ${hurt?`<path d="M 60 74 C 62 70 64 77 66 72 C 68 68 70 76 72 72" fill="none" stroke="#b0546c" stroke-width="2" stroke-linecap="round"/>`
-        :`<path d="M 60 72 C 63 78 69 78 72 72" fill="none" stroke="#b0546c" stroke-width="2.2" stroke-linecap="round"/>`}
-  <path d="M 28 52 C 26 24 42 12 64 12 C 86 12 102 24 100 52 L 94 30 L 86 48 L 78 28 L 70 46 L 62 26 L 54 46 L 46 28 L 38 48 Z" fill="url(#h2)"/>
-  <path d="M 38 30 L 46 22 L 52 30 L 60 20 L 68 30 L 76 20 L 84 30 L 90 24 L 94 32 L 90 36 L 84 28 L 76 36 L 68 26 L 60 36 L 52 26 L 46 36 L 40 28 Z" fill="#fff" opacity=".4"/>
-  <path d="M 60 12 C 56 -2 68 -10 80 -6 C 68 -3 62 4 65 11 Z" fill="url(#h2)"/>
-  <path d="M 30 32 C 24 48 24 66 28 82 L 36 70 C 33 56 33 44 36 36 Z" fill="url(#h2)"/>
-  <path d="M 98 32 C 104 48 104 66 100 82 L 92 70 C 95 56 95 44 92 36 Z" fill="url(#h2)"/>
-  <g transform="translate(92,28) rotate(16) scale(0.13)"><path d="${STAR}" fill="${C.gold}" stroke="${C.gold2}" stroke-width="8"/></g>
-  <g transform="translate(28,26) scale(0.26)">${bow(0,0,1,-16)}</g></svg>`;
-}
-
-const toURL = s => 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);
-const BUILTIN = {
-  spr:{ normal:(()=>{const i=new Image();i.src=toURL(chibi('normal'));return i;})(),
-        hurt:  (()=>{const i=new Image();i.src=toURL(chibi('hurt'));return i;})() },
-  art:{}, face:{}
-};
-['normal','smile','hurt','down'].forEach(e=>{
-  BUILTIN.art[e]=toURL(keyVisual(e));
-  BUILTIN.face[e]=toURL(portraitSVG(e));
-});
+const EMPTY_IMG = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 /* ══════════════════════════════════════════════════════════
    2. 에셋 로더 · 폴백 해석기
@@ -558,34 +368,36 @@ function faceCropURL(img,expr){
   g.imageSmoothingQuality='high';
   g.drawImage(img, cx-size/2, cy-size/2, size, size, 0,0,n,n);
   let url;
-  try{ url=c.toDataURL('image/png'); }catch(err){ url=BUILTIN.face[expr]; }
+  try{ url=c.toDataURL('image/png'); }catch(err){ url=EMPTY_IMG; }
   return faceCache[key]=url;
 }
 const slotImg = id => (LOADED[id] ? LOADED[id].img : null);
 
 function artURL(expr){
   const s = LOADED['art.'+expr] || LOADED['art.normal'];
-  return s ? s.url : BUILTIN.art[expr];
+  return s ? s.url : EMPTY_IMG;
 }
 function faceURL(expr){
   const f = LOADED['face.'+expr] || LOADED['face.normal'];
   if(f) return f.url;
   const a = LOADED['art.'+expr] || LOADED['art.normal'];
   if(a && a.img.complete && a.img.naturalWidth) return faceCropURL(a.img,expr);
-  return BUILTIN.face[expr];
+  return EMPTY_IMG;
 }
 function sprImg(state){
   const s = LOADED['spr.'+state] || LOADED['spr.normal'];
-  return s ? s.img : BUILTIN.spr[state];
+  return s ? s.img : null;
 }
 const sprCustom = () => !!(LOADED['spr.normal']||LOADED['spr.hurt']);
 
 function setSlot(id,url){
-  if(!url){ delete LOADED[id]; afterAssets(); return; }
-  const img=new Image();
-  img.onload=()=>{ LOADED[id]={url,img}; afterAssets(); };
-  img.onerror=()=>{ delete LOADED[id]; afterAssets(); };
-  img.src=url;
+  if(!url){ delete LOADED[id]; afterAssets(); return Promise.resolve(); }
+  return new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>{ LOADED[id]={url,img}; afterAssets(); resolve(true); };
+    img.onerror=()=>{ delete LOADED[id]; afterAssets(); resolve(false); };
+    img.src=url;
+  });
 }
 function afterAssets(){
   faceCache=Object.create(null);
@@ -596,9 +408,19 @@ function afterAssets(){
   syncHud();
 }
 function refreshDOMArt(){
-  const t=document.getElementById('artTitle'); if(t) t.src=artURL('normal');
+  const t=document.getElementById('artTitle');
+  if(t){
+    const u=artURL('normal');
+    if(u && u!==EMPTY_IMG){ t.src=u; t.classList.add('ready'); }
+    else { t.removeAttribute('src'); t.classList.remove('ready'); }
+  }
   const o=document.getElementById('artOver');
-  if(o && o.dataset.expr) o.src=artURL(o.dataset.expr);
+  if(o && o.dataset.expr){
+    const u=artURL(o.dataset.expr);
+    if(u && u!==EMPTY_IMG) o.src=u; else o.removeAttribute('src');
+  }
+  const lv=document.getElementById('artLevel');
+  if(lv && lv.getAttribute('src')===EMPTY_IMG) lv.removeAttribute('src');
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1101,7 +923,6 @@ function drawPlayer(p){
   const img=sprImg(p.hurt>0?'hurt':'normal');
   const a=(p.inv>0&&Math.floor(p.inv*18)%2===0)?.45:1;
   if(img && img.complete && img.naturalWidth) blitSprite(ctx,img,p.x,p.y+bob,p.face,a,squash);
-  else { ctx.fillStyle='#ffe7da'; ctx.beginPath(); ctx.arc(p.x,p.y,13,0,TAU); ctx.fill(); }
 
   if(p.hurt>0){
     ctx.strokeStyle='rgba(255,95,122,'+(p.hurt/.45*.8)+')'; ctx.lineWidth=3;
@@ -1411,7 +1232,7 @@ function drawPreview(){
   if(img&&img.complete&&img.naturalWidth) blitSprite(pctx,img,75,100,1,1,1);
   pctx.fillStyle='rgba(255,255,255,.35)';
   pctx.font='9px "Gothic A1",sans-serif'; pctx.textAlign='center';
-  pctx.fillText(sprCustom()?'내 스프라이트':'기본 SD 아트',75,140);
+  pctx.fillText(sprCustom()?'내 스프라이트':'에셋 로딩…',75,140);
 }
 
 function openDrawer(){
@@ -1425,11 +1246,22 @@ $('assetBtn').addEventListener('click',openDrawer);
 $('assetBtn2').addEventListener('click',openDrawer);
 $('drawerClose').addEventListener('click',closeDrawer);
 
-/* 코드에 미리 넣어둔 에셋 반영 */
-for(const id in ASSETS) if(ASSETS[id]) setSlot(id,ASSETS[id]);
-refreshDOMArt();
-renderSlots();
-drawPreview();
+/* 코드에 미리 넣어둔 에셋 — 전부 로드된 뒤에만 DOM 반영 (구 SVG 폴백 없음) */
+(function preloadAssets(){
+  const t=document.getElementById('artTitle');
+  if(t){ t.removeAttribute('src'); t.classList.remove('ready'); }
+  const jobs=[];
+  for(const id in ASSETS) if(ASSETS[id]) jobs.push(setSlot(id,ASSETS[id]));
+  Promise.all(jobs).then(()=>{
+    refreshDOMArt();
+    const art=document.getElementById('artTitle');
+    if(art && art.src && !art.src.endsWith('AAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7')) art.classList.add('ready');
+    // any real image
+    if(art && LOADED['art.normal']) art.classList.add('ready');
+    renderSlots();
+    drawPreview();
+  });
+})();
 
 /* 루프 */
 let last=performance.now();
