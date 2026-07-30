@@ -59,15 +59,11 @@
 
   /* header */
   header.hero{
-    display:grid;
-    gap:18px;
     margin-bottom:36px;
     padding:28px 24px 8px;
   }
   @media(min-width:780px){
     header.hero{
-      grid-template-columns:1.2fr .8fr;
-      align-items:end;
       padding:40px 8px 12px;
       margin-bottom:48px;
     }
@@ -109,27 +105,6 @@
     font-size:13px;font-weight:500;color:var(--cream);
   }
   .chip b{color:var(--gold);font-weight:700}
-  .hero-aside{
-    border:1px solid var(--line);
-    background:linear-gradient(160deg, rgba(30,26,51,.9), rgba(16,14,28,.75));
-    border-radius:var(--radius);
-    padding:18px 18px 16px;
-    box-shadow:0 20px 50px rgba(0,0,0,.35);
-  }
-  .hero-aside h2{
-    font-family:var(--disp);font-size:1.15rem;font-weight:400;
-    color:var(--gold);margin-bottom:8px;
-  }
-  .hero-aside p{color:var(--mute);font-size:.92rem;word-break:keep-all}
-  .hero-aside code{
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:.85em;
-    color:var(--aqua);
-    background:rgba(111,232,224,.08);
-    border:1px solid rgba(111,232,224,.18);
-    border-radius:6px;
-    padding:.1em .35em;
-  }
 
   /* section */
   .section-head{
@@ -280,17 +255,10 @@
         <h1>Public Games</h1>
         <p class="lede">
           브라우저에서 바로 즐기는 웹게임 모음입니다.
-          카드로 들어가 플레이하고, 새 작품은 하위 경로로 계속 쌓입니다.
+          카드를 눌러 플레이하세요.
         </p>
         <div class="stats" id="stats"></div>
       </div>
-      <aside class="hero-aside" aria-label="추가 안내">
-        <h2>이 레포 구조</h2>
-        <p>
-          루트는 갤러리, 각 게임은 <code>/slug/</code> 아래에 둡니다.
-          예: <code>/magical-lumi/</code>
-        </p>
-      </aside>
     </header>
 
     <div class="section-head">
@@ -306,7 +274,6 @@
   </div>
 
 <script>
-/* ── 새 게임 추가: 이 배열에 한 줄 더 넣으면 갤러리에 뜹니다 ── */
 const GAMES = [
   {
     id: 'magical-lumi',
@@ -316,6 +283,16 @@ const GAMES = [
     cover: './magical-lumi/assets/art.normal.png',
     tags: ['서바이버', '액션', '마법소녀'],
     accent: '#ff8fb1',
+    badge: 'NEW',
+  },
+  {
+    id: 'magical-ryuhaneul',
+    title: '마법소녀 류하늘',
+    subtitle: '별밤 서바이버 — 메인 아바타 버전',
+    href: './magical-ryuhaneul/',
+    cover: './magical-ryuhaneul/assets/art.normal.png',
+    tags: ['서바이버', '액션', '마법소녀'],
+    accent: '#7ec8ff',
     badge: 'NEW',
   },
 ];
@@ -335,8 +312,7 @@ function render(){
   const g = document.getElementById('gallery');
   const live = GAMES.filter(x => !x.soon);
   document.getElementById('stats').innerHTML =
-    `<span class="chip">공개 게임 <b>${live.length}</b></span>` +
-    `<span class="chip">경로 <b>/&lt;slug&gt;/</b></span>`;
+    `<span class="chip">공개 게임 <b>${live.length}</b></span>`;
   document.getElementById('countLabel').textContent = `${live.length} works`;
 
   const cards = GAMES.map((game, i) => {

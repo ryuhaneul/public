@@ -1,19 +1,23 @@
 # public — 류하늘 웹게임 갤러리
 
-GitHub Pages 허브.
+GitHub Pages 허브. **에이전트/작업자용 구조·추가 방법은 이 README를 본다.** 갤러리 UI(`index.html`)에는 레포 구조/경로 설명을 넣지 않는다.
 
 - 갤러리: https://ryuhaneul.github.io/public/
-- 예시 게임: https://ryuhaneul.github.io/public/magical-lumi/
+- 게임 예: https://ryuhaneul.github.io/public/magical-lumi/ · https://ryuhaneul.github.io/public/magical-ryuhaneul/
 
 ## 구조
 
 ```
 /
-  index.html           # 갤러리 (GAMES 배열)
-  magical-lumi/        # 게임 1
+  index.html              # 갤러리 (GAMES 배열만 편집)
+  README.md               # 이 파일 (작업 지침)
+  magical-lumi/           # 게임
     index.html
     assets/
-  <next-slug>/         # 이후 게임
+  magical-ryuhaneul/
+    index.html
+    assets/
+  <next-slug>/            # 이후 게임
 ```
 
 ## 게임 추가
@@ -27,14 +31,14 @@ GitHub Pages 허브.
   title: '제목',
   subtitle: '한 줄 설명',
   href: './slug/',
-  cover: './slug/cover.png',
+  cover: './slug/assets/art.normal.png', // 또는 전용 커버
   tags: ['장르'],
   accent: '#ffcf5c',
   badge: 'NEW', // 선택
 }
 ```
 
-3. `main` 에 push → Pages 자동 반영
+3. `main` 에 push → Pages 자동 반영 (branch `main` / root)
 
 ## 로컬
 
