@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>류하늘 · Public Games</title>
+<meta name="description" content="ryuhaneul의 공개 웹게임 갤러리">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#07060f;
+    --ink:#100e1c;
+    --panel:#161328;
+    --panel2:#1e1a33;
+    --line:rgba(255,214,140,.18);
+    --cream:#fff6e8;
+    --mute:#a89ec4;
+    --gold:#ffcf5c;
+    --gold2:#e8a53a;
+    --sakura:#ff8fb1;
+    --aqua:#6fe8e0;
+    --violet:#8b7cf6;
+    --disp:'Black Han Sans','IBM Plex Sans KR',sans-serif;
+    --body:'IBM Plex Sans KR',system-ui,sans-serif;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    min-height:100dvh;
+    color:var(--cream);
+    font-family:var(--body);
+    font-size:16px;
+    line-height:1.65;
+    background:
+      radial-gradient(1200px 600px at 12% -10%, rgba(139,124,246,.28), transparent 55%),
+      radial-gradient(900px 500px at 90% 0%, rgba(255,143,177,.16), transparent 50%),
+      radial-gradient(800px 480px at 50% 110%, rgba(111,232,224,.08), transparent 55%),
+      linear-gradient(165deg, #0a0814 0%, var(--void) 40%, #0c0a18 100%);
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      radial-gradient(1.5px 1.5px at 8% 18%, rgba(255,255,255,.55), transparent),
+      radial-gradient(1px 1px at 22% 62%, rgba(255,207,92,.7), transparent),
+      radial-gradient(1.2px 1.2px at 41% 28%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1px 1px at 63% 14%, rgba(111,232,224,.65), transparent),
+      radial-gradient(1.4px 1.4px at 78% 44%, rgba(255,255,255,.45), transparent),
+      radial-gradient(1px 1px at 91% 72%, rgba(255,143,177,.55), transparent),
+      radial-gradient(1.2px 1.2px at 15% 88%, rgba(255,255,255,.35), transparent),
+      radial-gradient(1px 1px at 52% 81%, rgba(255,207,92,.5), transparent);
+    opacity:.85;
+  }
+  .wrap{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:28px 20px 64px}
+
+  /* header */
+  header.hero{
+    display:grid;
+    gap:18px;
+    margin-bottom:36px;
+    padding:28px 24px 8px;
+  }
+  @media(min-width:780px){
+    header.hero{
+      grid-template-columns:1.2fr .8fr;
+      align-items:end;
+      padding:40px 8px 12px;
+      margin-bottom:48px;
+    }
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--aqua);
+  }
+  .eyebrow::before{
+    content:"";width:18px;height:1px;background:currentColor;opacity:.8;
+  }
+  h1{
+    font-family:var(--disp);
+    font-weight:400;
+    font-size:clamp(2.4rem, 6vw, 3.6rem);
+    line-height:1.12;
+    letter-spacing:-.02em;
+    word-break:keep-all;
+    margin:.35em 0 .25em;
+    background:linear-gradient(110deg, #fff8ec 10%, var(--gold) 45%, var(--sakura) 90%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .lede{
+    max-width:36em;
+    color:var(--mute);
+    font-size:1.02rem;
+    word-break:keep-all;
+  }
+  .stats{
+    display:flex;flex-wrap:wrap;gap:10px;
+    margin-top:18px;
+  }
+  .chip{
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.04);
+    border-radius:999px;
+    padding:7px 14px;
+    font-size:13px;font-weight:500;color:var(--cream);
+  }
+  .chip b{color:var(--gold);font-weight:700}
+  .hero-aside{
+    border:1px solid var(--line);
+    background:linear-gradient(160deg, rgba(30,26,51,.9), rgba(16,14,28,.75));
+    border-radius:var(--radius);
+    padding:18px 18px 16px;
+    box-shadow:0 20px 50px rgba(0,0,0,.35);
+  }
+  .hero-aside h2{
+    font-family:var(--disp);font-size:1.15rem;font-weight:400;
+    color:var(--gold);margin-bottom:8px;
+  }
+  .hero-aside p{color:var(--mute);font-size:.92rem;word-break:keep-all}
+  .hero-aside code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:.85em;
+    color:var(--aqua);
+    background:rgba(111,232,224,.08);
+    border:1px solid rgba(111,232,224,.18);
+    border-radius:6px;
+    padding:.1em .35em;
+  }
+
+  /* section */
+  .section-head{
+    display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    margin:8px 4px 16px;
+  }
+  .section-head h2{
+    font-family:var(--disp);font-size:1.45rem;font-weight:400;letter-spacing:.01em;
+  }
+  .section-head span{color:var(--mute);font-size:.9rem}
+
+  /* gallery */
+  .gallery{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:18px;
+  }
+  @media(min-width:640px){ .gallery{grid-template-columns:repeat(2,1fr)} }
+  @media(min-width:980px){ .gallery{grid-template-columns:repeat(3,1fr)} }
+
+  .card{
+    --accent:var(--gold);
+    position:relative;
+    display:flex;flex-direction:column;
+    border-radius:calc(var(--radius) + 2px);
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, var(--panel2), var(--panel));
+    overflow:hidden;
+    text-decoration:none;color:inherit;
+    cursor:pointer;
+    transition:transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    animation:rise .7s ease both;
+  }
+  .card:nth-child(1){animation-delay:.05s}
+  .card:nth-child(2){animation-delay:.12s}
+  .card:nth-child(3){animation-delay:.19s}
+  .card:hover,.card:focus-visible{
+    transform:translateY(-6px);
+    border-color:color-mix(in srgb, var(--accent) 55%, transparent);
+    box-shadow:
+      0 18px 40px rgba(0,0,0,.4),
+      0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent),
+      0 0 40px color-mix(in srgb, var(--accent) 12%, transparent);
+  }
+  .card:focus-visible{outline:2px solid var(--aqua);outline-offset:3px}
+  .cover{
+    position:relative;
+    aspect-ratio:4/5;
+    background:
+      radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 60%),
+      linear-gradient(165deg, #2a2450 0%, #12102a 55%, #0a0918 100%);
+    overflow:hidden;
+  }
+  .cover img{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    object-fit:contain;
+    object-position:center 58%;
+    padding:8% 6% 0;
+    filter:drop-shadow(0 12px 24px rgba(0,0,0,.45));
+    transition:transform .35s ease;
+  }
+  .card:hover .cover img{transform:scale(1.04) translateY(-4px)}
+  .cover::after{
+    content:"";
+    position:absolute;left:0;right:0;bottom:0;height:42%;
+    background:linear-gradient(to top, var(--panel) 8%, transparent);
+    pointer-events:none;
+  }
+  .badge{
+    position:absolute;top:12px;left:12px;z-index:2;
+    font-size:11px;font-weight:700;letter-spacing:.06em;
+    padding:5px 10px;border-radius:999px;
+    background:rgba(7,6,15,.72);
+    border:1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    color:var(--accent);
+    backdrop-filter:blur(6px);
+  }
+  .body{padding:4px 16px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .body h3{
+    font-family:var(--disp);font-size:1.35rem;font-weight:400;
+    letter-spacing:-.01em;word-break:keep-all;
+  }
+  .sub{color:var(--mute);font-size:.92rem;word-break:keep-all}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+  .tag{
+    font-size:11px;font-weight:600;
+    padding:3px 9px;border-radius:999px;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.08);
+    color:#d8d0ef;
+  }
+  .play{
+    margin-top:auto;padding-top:12px;
+    display:inline-flex;align-items:center;gap:8px;
+    font-weight:700;font-size:.95rem;color:var(--gold);
+  }
+  .play svg{width:16px;height:16px;flex:none}
+  .card:hover .play{color:#ffe29a}
+
+  /* empty slot teaser */
+  .card.soon{
+    --accent:var(--violet);
+    opacity:.88;
+    cursor:default;
+  }
+  .card.soon .cover{
+    display:grid;place-items:center;
+    background:
+      repeating-linear-gradient(-45deg, rgba(255,255,255,.03) 0 10px, transparent 10px 20px),
+      linear-gradient(160deg, #1a1730, #0e0c1a);
+  }
+  .soon-mark{
+    font-family:var(--disp);font-size:1.1rem;color:var(--mute);
+    letter-spacing:.08em;
+  }
+  .card.soon:hover{transform:none;box-shadow:none;border-color:var(--line)}
+
+  footer{
+    margin-top:48px;padding:20px 8px 0;
+    border-top:1px solid rgba(255,255,255,.06);
+    display:flex;flex-wrap:wrap;gap:10px 18px;
+    justify-content:space-between;align-items:center;
+    color:var(--mute);font-size:.88rem;
+  }
+  footer a{color:var(--aqua);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  footer a:focus-visible{outline:2px solid var(--aqua);outline-offset:3px;border-radius:4px}
+
+  @keyframes rise{
+    from{opacity:0;transform:translateY(16px)}
+    to{opacity:1;transform:none}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{
+      animation-duration:.01ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">ryuhaneul · github pages</p>
+        <h1>Public Games</h1>
+        <p class="lede">
+          브라우저에서 바로 즐기는 웹게임 모음입니다.
+          카드로 들어가 플레이하고, 새 작품은 하위 경로로 계속 쌓입니다.
+        </p>
+        <div class="stats" id="stats"></div>
+      </div>
+      <aside class="hero-aside" aria-label="추가 안내">
+        <h2>이 레포 구조</h2>
+        <p>
+          루트는 갤러리, 각 게임은 <code>/slug/</code> 아래에 둡니다.
+          예: <code>/magical-lumi/</code>
+        </p>
+      </aside>
+    </header>
+
+    <div class="section-head">
+      <h2>갤러리</h2>
+      <span id="countLabel"></span>
+    </div>
+    <div class="gallery" id="gallery" aria-label="게임 목록"></div>
+
+    <footer>
+      <span>© <span id="year"></span> 류하늘 · AI 에셋 포함 · 비상업 공개</span>
+      <a href="https://github.com/ryuhaneul/public" rel="noopener">GitHub</a>
+    </footer>
+  </div>
+
+<script>
+/* ── 새 게임 추가: 이 배열에 한 줄 더 넣으면 갤러리에 뜹니다 ── */
+const GAMES = [
+  {
+    id: 'magical-lumi',
+    title: '마법소녀 루미',
+    subtitle: '별밤 서바이버 — 별을 모아 밤을 지켜라',
+    href: './magical-lumi/',
+    cover: './magical-lumi/assets/art.normal.png',
+    tags: ['서바이버', '액션', '마법소녀'],
+    accent: '#ff8fb1',
+    badge: 'NEW',
+  },
+];
+
+const playIcon = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/>
+  <path d="M10 8.5v7l6-3.5-6-3.5z" fill="currentColor"/>
+</svg>`;
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  ));
+}
+
+function render(){
+  const g = document.getElementById('gallery');
+  const live = GAMES.filter(x => !x.soon);
+  document.getElementById('stats').innerHTML =
+    `<span class="chip">공개 게임 <b>${live.length}</b></span>` +
+    `<span class="chip">경로 <b>/&lt;slug&gt;/</b></span>`;
+  document.getElementById('countLabel').textContent = `${live.length} works`;
+
+  const cards = GAMES.map((game, i) => {
+    const style = game.accent ? `style="--accent:${esc(game.accent)}"` : '';
+    if (game.soon) {
+      return `<div class="card soon" ${style} aria-disabled="true">
+        <div class="cover"><span class="soon-mark">COMING SOON</span></div>
+        <div class="body">
+          <h3>${esc(game.title)}</h3>
+          <p class="sub">${esc(game.subtitle || '준비 중')}</p>
+        </div>
+      </div>`;
+    }
+    const tags = (game.tags || []).map(t => `<span class="tag">${esc(t)}</span>`).join('');
+    const badge = game.badge ? `<span class="badge">${esc(game.badge)}</span>` : '';
+    return `<a class="card" href="${esc(game.href)}" ${style}>
+      <div class="cover">
+        ${badge}
+        <img src="${esc(game.cover)}" alt="" loading="${i < 3 ? 'eager' : 'lazy'}" width="400" height="500">
+      </div>
+      <div class="body">
+        <h3>${esc(game.title)}</h3>
+        <p class="sub">${esc(game.subtitle || '')}</p>
+        <div class="tags">${tags}</div>
+        <span class="play">${playIcon} 플레이</span>
+      </div>
+    </a>`;
+  }).join('');
+  g.innerHTML = cards;
+}
+
+document.getElementById('year').textContent = new Date().getFullYear();
+render();
+</script>
+</body>
+</html>
