@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>마법소녀 별밤 서바이버</title>
+<title>매지컬 서바이버</title>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -226,13 +226,14 @@
   <div class="casting-layout layer">
     <div class="casting-copy">
       <span class="eyebrow">STARLIT MAGICAL GIRLS</span>
-      <h1 class="display-title" id="titleHeading" tabindex="-1"><small>마법소녀 선택</small>별밤<br>서바이버</h1>
+      <h1 class="display-title" id="titleHeading" tabindex="-1"><small>마법소녀 선택</small>매지컬<br>서바이버</h1>
       <div class="character-line" aria-live="polite">
         <strong id="characterName"></strong><span id="characterLine"></span>
       </div>
       <div class="casting-chips" aria-label="캐릭터 선택">
         <button class="casting-chip" data-character="lumi" aria-pressed="true"><img src="assets/lumi/art.normal.png" alt=""><span class="chip-name"></span></button>
         <button class="casting-chip" data-character="ryuhaneul" aria-pressed="false"><img src="assets/ryuhaneul/art.normal.png" alt=""><span class="chip-name"></span></button>
+        <button class="casting-chip" data-character="arien" aria-pressed="false"><img src="assets/arien/art.normal.png" alt=""><span class="chip-name"></span></button>
       </div>
       <div class="casting-actions">
         <button class="primary" id="castingConfirm"></button>
@@ -246,6 +247,7 @@
     <div class="casting-art" aria-hidden="true">
       <img class="active" data-art="lumi" src="assets/lumi/art.normal.png" alt="">
       <img data-art="ryuhaneul" src="assets/ryuhaneul/art.normal.png" alt="">
+      <img data-art="arien" src="assets/arien/art.normal.png" alt="">
     </div>
     <span class="art-caption" id="artCaption"></span>
   </div>
@@ -270,7 +272,7 @@
   <div class="pause-panel layer">
     <span class="eyebrow">PAUSED</span>
     <h2 id="pauseTitle" tabindex="-1">일시정지</h2>
-    <p>별밤은 잠시 숨을 고르고 있습니다.</p>
+    <p>매지컬 서바이버가 잠시 숨을 고르고 있습니다.</p>
     <div class="pause-actions">
       <button class="primary" id="resumeBtn">계속하기</button>
       <button class="secondary" id="saveMainBtn">저장 후 메인으로 돌아가기</button>
@@ -325,10 +327,12 @@
 'use strict';
 
 const CHARACTERS = {
-  lumi:      { id:'lumi',      name:'루미',   dir:'assets/lumi/',      idleBboxH:490, tune:{sz:1,sy:0,fz:1,fx:0,fy:0},
+  lumi:      { id:'lumi',      name:'루미',   dir:'assets/lumi/',      idleBboxH:490, walkFrames:14, tune:{sz:1,sy:0,fz:1,fx:0,fy:0},
     line:'분홍빛 트윈테일과 별 장식이 밤하늘 위에서 반짝입니다.', caption:'LUMI · PINK TWIN TAIL' },
-  ryuhaneul: { id:'ryuhaneul', name:'류하늘', dir:'assets/ryuhaneul/', idleBboxH:479, tune:{sz:1,sy:0,fz:1,fx:0,fy:0},
+  ryuhaneul: { id:'ryuhaneul', name:'류하늘', dir:'assets/ryuhaneul/', idleBboxH:479, walkFrames:14, tune:{sz:1,sy:0,fz:1,fx:0,fy:0},
     line:'하늘빛 긴 머리와 푸른 보석 지팡이가 고요한 밤에 빛납니다.', caption:'RYU HANEUL · SKY BLUE HAIR' },
+  arien:     { id:'arien',     name:'아리엔', dir:'assets/arien/',     idleBboxH:490, walkFrames:13, tune:{sz:1,sy:0,fz:1,fx:0,fy:0},
+    line:'은빛 머리의 초보 소환사가 별 지팡이 하나를 들고 첫 밤에 나섭니다.', caption:'ARIEN · NOVICE SUMMONER' },
 };
 const COMMON_DIR = 'assets/common/';
 let selectedCharacter='lumi', activeCharacterId='lumi', activationGeneration=0;
@@ -446,7 +450,7 @@ async function activateCharacter(id){
   const urls={
     'art.normal':character.dir+'art.normal.png','art.smile':character.dir+'art.smile.png','art.down':character.dir+'art.down.png',
     'spr.normal':character.dir+'spr.normal.png','spr.hurt':character.dir+'spr.hurt.png',
-    ...Object.fromEntries(Array.from({length:WALK_FRAMES},(_,i)=>
+    ...Object.fromEntries(Array.from({length:character.walkFrames},(_,i)=>
       ['spr.walk'+(i+1),character.dir+'spr.walk'+(i+1)+'.png'])),
     'enemy.wisp':COMMON_DIR+'enemy.wisp.png','enemy.bat':COMMON_DIR+'enemy.bat.png',
     'enemy.knight':COMMON_DIR+'enemy.knight.png','enemy.boss':COMMON_DIR+'enemy.boss.png'
@@ -956,9 +960,15 @@ function draw(){
 }
 
 const SPR_H=77;
-const WALK_FRAMES=14;  // i2v 클립의 전주기 그대로 — 선별을 없애 주기 오판 여지를 제거
-const WALK_STEP=7;     // 14 × 7px = 사이클당 98px (4 × 24px = 96px 과 같은 보폭)
-const playerSpriteState=p=>p.hurt>0?'hurt':(p.moving?'walk'+(Math.floor(p.walk/WALK_STEP)%WALK_FRAMES+1):'normal');
+// 프레임 수는 캐릭터마다 다르다 — i2v 클립의 실제 보행 주기를 그대로 쓰기 때문(루미 9 / 류하늘 14).
+// 보폭은 프레임 수와 무관하게 사이클당 이동거리로 고정해, 프레임이 많은 쪽이 느리게 걷지 않도록 한다.
+const WALK_CYCLE_PX=98;
+const playerSpriteState=p=>{
+  if(p.hurt>0) return 'hurt';
+  if(!p.moving) return 'normal';
+  const n=currentCharacter().walkFrames;
+  return 'walk'+(Math.floor(p.walk/(WALK_CYCLE_PX/n))%n+1);
+};
 function blitSprite(g,img,p,alpha){
   const character=currentCharacter(),TUNE=character.tune;
   const H=SPR_H*TUNE.sz;
@@ -1414,10 +1424,17 @@ function renderLevelUpCards(){
   }).join('');
   box.querySelectorAll('.level-choice').forEach(button=>button.addEventListener('click',()=>chooseCard(+button.dataset.i)));
 }
+// 이름 끝 받침에 따라 '로'/'으로'. ㄹ 받침은 '로' 를 쓴다 (류하늘로 / 아리엔으로).
+function withRo(name){
+  const code=name.charCodeAt(name.length-1)-0xAC00;
+  if(code<0||code>11171) return name+'로';
+  const jong=code%28;
+  return name+(jong===0||jong===8?'로':'으로');
+}
 function syncTitleCharacter(){
   const character=CHARACTERS[selectedCharacter];
   $('characterName').textContent=character.name;$('characterLine').textContent=character.line;
-  $('artCaption').textContent=character.caption;$('castingConfirm').textContent=character.name+'로 시작하기';
+  $('artCaption').textContent=character.caption;$('castingConfirm').textContent=withRo(character.name)+' 시작하기';
   document.querySelectorAll('.casting-chip').forEach(chip=>{
     const selected=chip.dataset.character===selectedCharacter;
     chip.setAttribute('aria-pressed',String(selected));
